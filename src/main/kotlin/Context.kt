@@ -1,4 +1,3 @@
-import com.jogamp.common.nio.Buffers
 import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL4
 import com.jogamp.opengl.GLAutoDrawable
@@ -6,12 +5,9 @@ import com.jogamp.opengl.GLEventListener
 import java.io.ByteArrayOutputStream
 
 object Context : GLEventListener {
-    private val vertexFloats = Buffers.newDirectFloatBuffer(12)
-    private val indexBuffer = Buffers.newDirectIntBuffer(6)
-    val bufferHandles = IntArray(2)
+    lateinit var vb : VertexBuffer
+    lateinit var ib: IndexBuffer
     val vertexArrayHandles = IntArray(1)
-    var vertexBufferHandle = -1
-    var indexBufferHandle = -1
     var programHandle = -1
 
     var timer = 0.0f
@@ -24,37 +20,27 @@ object Context : GLEventListener {
         gl.swapInterval = 1
         println(gl.glGetString(GL4.GL_VERSION))
 
-        arrayListOf(
+        val vertices = floatArrayOf(
             -0.5f, -0.5f,
             0.5f, -0.5f,
             0.5f, 0.5f,
             -0.5f, 0.5f
-        ).mapIndexed { i, v -> vertexFloats.put(i, v) }
+        )
 
-        arrayListOf(
+        val indices = intArrayOf(
             0, 1, 2,
             2, 3, 0
-        ).mapIndexed { i, v -> indexBuffer.put(i, v) }
-
-        gl.glGenBuffers(2, bufferHandles, 0)
-        vertexBufferHandle = bufferHandles[0]
-        indexBufferHandle = bufferHandles[1]
+        )
 
         gl.glGenVertexArrays(1, vertexArrayHandles, 0)
         gl.glBindVertexArray(vertexArrayHandles[0])
 
-        val vertexBytes = vertexFloats.limit() * 4L
-        gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vertexBufferHandle)
-        gl.glBufferData(GL4.GL_ARRAY_BUFFER, vertexBytes, vertexFloats, GL4.GL_STATIC_DRAW)
+        vb = VertexBuffer(gl, vertices)
+
         gl.glEnableVertexAttribArray(0)
         gl.glVertexAttribPointer(0, 2, GL4.GL_FLOAT, false, 8, 0)
-        gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, 0)
-        gl.glDisableVertexAttribArray(0)
 
-        val indexBytes = indexBuffer.limit() * 4L
-        gl.glBindBuffer(GL4.GL_ELEMENT_ARRAY_BUFFER, indexBufferHandle)
-        gl.glBufferData(GL4.GL_ELEMENT_ARRAY_BUFFER, indexBytes, indexBuffer, GL4.GL_STATIC_DRAW)
-        gl.glBindBuffer(GL4.GL_ELEMENT_ARRAY_BUFFER, 0)
+        ib = IndexBuffer(gl, indices)
 
         programHandle = Util.createShaderProgram(
             gl,
@@ -82,13 +68,14 @@ object Context : GLEventListener {
 
         gl.glEnableVertexAttribArray(0)
         gl.glBindVertexArray(vertexArrayHandles[0])
-        gl.glBindBuffer(GL4.GL_ELEMENT_ARRAY_BUFFER, indexBufferHandle)
+        vb.bind()
+        ib.bind()
 
         gl.glDrawElements(GL4.GL_TRIANGLES, 6, GL4.GL_UNSIGNED_INT, 0)
 
         gl.glDisableVertexAttribArray(0)
-        gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, 0)
-        gl.glBindBuffer(GL4.GL_ELEMENT_ARRAY_BUFFER, 0)
+        vb.unbind()
+        ib.unbind()
         gl.glUseProgram(0)
     }
 }
