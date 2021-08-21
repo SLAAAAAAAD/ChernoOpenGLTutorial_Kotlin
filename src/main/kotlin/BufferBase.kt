@@ -1,5 +1,4 @@
 import com.jogamp.opengl.GL4
-import java.nio.Buffer
 
 abstract class BufferBase(val gl: GL4, val target: Int) {
     var handle : Int

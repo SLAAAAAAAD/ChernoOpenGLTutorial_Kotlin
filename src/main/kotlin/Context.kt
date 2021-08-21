@@ -52,6 +52,8 @@ object Context : GLEventListener {
     override fun dispose(glautodrawable: GLAutoDrawable) {
         val gl = glautodrawable.gl.gL4
         gl.glDeleteProgram(programHandle)
+        vb.dispose()
+        ib.dispose()
     }
 
     override fun display(glautodrawable: GLAutoDrawable) {
