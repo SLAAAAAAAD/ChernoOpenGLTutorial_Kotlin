@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream
 object Context : GLEventListener {
     lateinit var vb : VertexBuffer
     lateinit var ib: IndexBuffer
+    lateinit var va: VertexArray
+    lateinit var layout: VertexBufferLayout
     val vertexArrayHandles = IntArray(1)
     var programHandle = -1
 
@@ -32,14 +34,12 @@ object Context : GLEventListener {
             2, 3, 0
         )
 
-        gl.glGenVertexArrays(1, vertexArrayHandles, 0)
-        gl.glBindVertexArray(vertexArrayHandles[0])
 
+        va = VertexArray(gl)
         vb = VertexBuffer(gl, vertices)
-
-        gl.glEnableVertexAttribArray(0)
-        gl.glVertexAttribPointer(0, 2, GL4.GL_FLOAT, false, 8, 0)
-
+        layout = VertexBufferLayout()
+        layout.pushFloat(2)
+        va.addBuffer(vb, layout)
         ib = IndexBuffer(gl, indices)
 
         programHandle = Util.createShaderProgram(
@@ -52,6 +52,7 @@ object Context : GLEventListener {
     override fun dispose(glautodrawable: GLAutoDrawable) {
         val gl = glautodrawable.gl.gL4
         gl.glDeleteProgram(programHandle)
+        va.dispose()
         vb.dispose()
         ib.dispose()
     }
@@ -68,14 +69,13 @@ object Context : GLEventListener {
         gl.glUniform4f(gl.glGetUniformLocation(programHandle, "uColor"), red, 0.05f, 0.7f, 1.0f)
         timer = (timer + 1f / 360f) % 1f
 
-        gl.glEnableVertexAttribArray(0)
-        gl.glBindVertexArray(vertexArrayHandles[0])
+        va.bind()
         vb.bind()
         ib.bind()
 
         gl.glDrawElements(GL4.GL_TRIANGLES, 6, GL4.GL_UNSIGNED_INT, 0)
 
-        gl.glDisableVertexAttribArray(0)
+        va.unbind()
         vb.unbind()
         ib.unbind()
         gl.glUseProgram(0)
