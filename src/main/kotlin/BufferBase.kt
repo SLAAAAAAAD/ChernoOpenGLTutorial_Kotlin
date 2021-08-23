@@ -1,7 +1,7 @@
 import com.jogamp.opengl.GL4
 
 abstract class BufferBase(val gl: GL4, val target: Int) {
-    var handle : Int
+    val handle : Int
     init {
         val tempBufferHandleArray = IntArray(1)
         gl.glGenBuffers(1, tempBufferHandleArray, 0)
