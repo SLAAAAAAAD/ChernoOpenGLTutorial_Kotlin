@@ -7,12 +7,12 @@ class VertexBufferLayout {
     var stride: Int = 0
         private set
 
-    fun pushFloat(count: Int) {
+    fun addFloat(count: Int) {
         elements.add(VertexBufferElement(GL4.GL_FLOAT, count, false, Float.SIZE_BYTES))
         stride += Float.SIZE_BYTES * count
     }
 
-    fun pushInt(count: Int) {
+    fun addInt(count: Int) {
         elements.add(VertexBufferElement(GL4.GL_INT, count, false, Int.SIZE_BYTES))
         stride += Int.SIZE_BYTES * count
     }
